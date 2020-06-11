@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
-const validator = require('validator');
+// const validator = require('validator');
+// const bcrypt = require('bcryptjs');
 
 const Task = mongoose.model('Task', {
     description: {
