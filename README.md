@@ -1,6 +1,5 @@
-# Task Manager API
+# Task Manager REST API
 
-<br><br>
 <h1>The different usable url paths:</h1>
     <h2>Users paths</h2>
     <ul>
