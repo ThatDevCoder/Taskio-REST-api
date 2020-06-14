@@ -3,9 +3,9 @@ const User = require("../models/user");
 const router = new express.Router();
 const auth = require("../middleware/auth");
 const multer = require("multer");
+const sharp = require("sharp");
 
 const upload = multer({
-    dest: "avatars",
     limits: {
         fileSize: 1000000,
     },
@@ -22,14 +22,52 @@ const upload = multer({
 
 router.post(
     "/users/me/avatar",
+    auth,
     upload.single("avatars"),
-    (req, res) => {
+    async (req, res) => {
+        const buffer = await sharp(req.file.buffer)
+            .resize({ width: 250, height: 250 })
+            .png()
+            .toBuffer();
+        req.user.avatar = buffer;
+        await req.user.save();
         res.send();
     },
     (error, req, res, next) => {
         res.status(400).send({ error: error.message });
     }
 );
+
+router.delete(
+    "/users/me/avatar",
+    auth,
+    async (req, res) => {
+        req.user.avatar = undefined;
+        await req.user.save();
+        res.send();
+    },
+    (error, req, res, next) => {
+        res.status(400).send({ error: error.message });
+    }
+);
+
+router.get("/users/:id/avatar", async (req, res) => {
+    // await res.send(req.user.avatar);
+    try {
+        const user = await User.findById(req.params.id);
+
+        if (!user || !user.avatar) {
+            throw new Error("No user found");
+        }
+        // 5ee679a012dc47612ca6475b
+
+        // res.set('Content-Type' ,'application/json')
+        res.set("Content-Type", "image/png");
+        res.send(user.avatar);
+    } catch (e) {
+        res.status(404).send();
+    }
+});
 
 router.post("/users", async (req, res) => {
     const user = new User(req.body);
